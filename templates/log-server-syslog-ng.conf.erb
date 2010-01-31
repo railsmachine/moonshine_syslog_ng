@@ -1,0 +1,29 @@
+# BBG - Define a source for log files.  This causes syslog-ng to
+# listen on an IP that then allows your application server
+# syslog-ng servers to talk to. 
+source app_cluster { 
+    udp( ip(<%= configuration[:log_server_ip] %>) port(<%= configuration[:log_server_port]%>)); 
+}; 
+
+# BBG - Define a destination.  Our filter will then map anything
+# from our above source to this destination. 
+destination d_rails_apps { 
+    file("/var/log/rails/prod/$PROGRAM/$YEAR-$MONTH/$DAY/$PROGRAM-$YEAR$MONTH$DAY" 
+      owner("<%= configuration[:user] %>") 
+        group("<%= configuration[:user] %>") 
+        perm(0660) 
+        dir_perm(0770) 
+        create_dirs(yes) 
+    ); 
+}; 
+
+# BBG - Define our filter that we'll use to map our logs. 
+filter f_rails_apps { program("rails-***"); }; 
+
+# BBG - Now use the above source and destination to route our
+# log file to the appropriate place. 
+log { source(app_cluster); 
+    filter (f_rails_apps); 
+    destination(d_rails_apps); 
+    flags(final); };
+

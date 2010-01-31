@@ -1,0 +1,14 @@
+= Moonshine_SyslogNg
+
+=== A plugin for Moonshine[http://github.com/railsmachine/moonshine]
+
+A plugin for installing and managing syslog_ng.
+
+=== Instructions
+
+* <tt>script/plugin install git://github.com/ACCOUNT/moonshine_syslog_ng.git</tt>
+* Configure settings if needed
+    configure(:syslog_ng => {:foo => true})
+* Include the plugin and recipe(s) in your Moonshine manifest
+    plugin :syslog_ng
+    recipe :syslog_ng

@@ -1,0 +1,15 @@
+# BBG - Configure the rails portion of our syslog-ng setup! 
+# This section can be left as is. 
+log {    source(s_all); 
+    filter(f_rails_apps); 
+    destination(log_server); 
+    flags(final); }; 
+
+# You should create a filter here that will catch your facility 
+# you will define within your rails application. 
+filter f_rails_apps { program("rails-*"); }; 
+
+# You should set your IP address / port of the remote logging server. 
+destination log_server { 
+    udp("<%= configuration[:log_server_ip] %>" port(<%= configuration[:log_server_port]%>)); 
+}; 
