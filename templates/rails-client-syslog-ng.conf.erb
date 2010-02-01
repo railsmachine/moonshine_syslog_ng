@@ -5,11 +5,18 @@ log {    source(s_all);
     destination(log_server); 
     flags(final); }; 
 
+log {    source(s_all);
+    filter(f_passenger);
+    destination(log_server);
+    flags(final); };
+
+
 # You should create a filter here that will catch your facility 
 # you will define within your rails application. 
 filter f_rails_apps { program("rails-*"); }; 
+filter f_passenger { facility(local7); };
 
 # You should set your IP address / port of the remote logging server. 
 destination log_server { 
-    udp("<%= configuration[:log_server_ip] %>" port(<%= configuration[:log_server_port]%>)); 
+    udp("<%= configuration[:syslog_ng][:log_server_ip] %>" port(<%= configuration[:syslog_ng][:log_server_port]%>)); 
 }; 

@@ -22,14 +22,14 @@ module SyslogNg
       :notify => service('syslog-ng')
   end
 
-  def syslog_ng_log_server
+  def syslog_ng_centralized_log_server
     extra_conf = template(File.join(File.dirname(__FILE__), '..', 'templates', 'log-server-syslog-ng.conf.erb'), binding)
     configure :syslog_ng => {
                               :options => {
                                 :chain_hostnames => 'off',
                                 :sync => 0,
                                 :dir_owner => 'root',
-                                :dir_group => 'logs',
+                                :dir_group => 'admin',
                                 :stats => 43200,
                                 :use_dns => 'yes',
                                 :dns_cache => 'yes',
@@ -58,9 +58,13 @@ module SyslogNg
                   :sync => 0,
                   :stats => 43200,
                   :log_msg_size => 1048576
-              },
-              :extra => extra_conf
-            }
+                },
+                :extra => extra_conf
+              }
+    vhost_extra = configuration[:passenger][:vhost_extra] || ""
+    configure :passenger => {
+      :vhost_extra => vhost_extra + %Q{\n  CustomLog \"| logger -p local7.info -t passenger\" vhost_combined}
+    }
 
     syslog_ng
   end
