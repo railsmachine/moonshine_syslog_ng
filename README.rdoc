@@ -57,13 +57,16 @@ Example usage:
 
 This uses the underlying <tt>syslog_ng</tt> recipe to setup the host as a centralized log server ready to receive logs from hosts setup with <tt>syslog_ng_rails_client</tt>
 
+This will save rails logs to /var/log/rails/rails-application-environment.log and passenger logs to /var/log/rails/passenger.log.
+
+If you need log rotation, you can use logrotate to handle this for you.
+
 You need to provide additional configuration with the IP address of the log server and a port to listen on:
 
     # moonshine.yml, note this isn't under the syslog_ng namespace
     :syslog_ng:
       :log_server_ip: 555.555.555.555
       :log_server_port: 515
-      
 
 This sets some <tt>:options</tt> and uses the <tt>:extra</tt>. If you need more customization, it probably would make sense to create a new recipe based on it with whatever options and extra configuration you need.
 
