@@ -203,6 +203,11 @@ filter f_xconsole {
                 and level(crit,err,notice));
 };
 
+filter f_rails_apps { program("rails-***"); }; 
+filter f_not_rails_apps { not program("rails-***"); }; 
+filter f_passenger { facility(local7); };
+filter f_not_passenger { not facility(local7); };
+
 
 ######
 # logs
@@ -222,6 +227,8 @@ log {
 log {
         source(s_all);
         filter(f_syslog);
+        filter(f_not_rails_apps);
+        filter(f_not_passenger);
         destination(df_syslog);
 };
 

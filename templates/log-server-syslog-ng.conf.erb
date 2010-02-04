@@ -8,38 +8,35 @@ source app_cluster {
 # Define a destination.  Our filter will then map anything
 # from our above source to this destination. 
 destination d_rails_apps { 
-file("/var/log/rails/$PROGRAM.log" 
-      owner("<%= configuration[:user] %>") 
+  file( "/var/log/rails/$PROGRAM.log" 
+        owner("<%= configuration[:user] %>") 
         group("<%= configuration[:user] %>") 
         perm(0660) 
         dir_perm(0770) 
-        create_dirs(yes) 
-    ); 
+        create_dirs(yes)); 
 }; 
 
 destination d_passenger { 
-file("/var/log/rails/passenger.log" 
-      owner("<%= configuration[:user] %>") 
+  file( "/var/log/rails/passenger.log" 
+        owner("<%= configuration[:user] %>") 
         group("<%= configuration[:user] %>") 
         perm(0660) 
         dir_perm(0770) 
-        create_dirs(yes) 
-    ); 
+        create_dirs(yes)); 
 }; 
 
-# BBG - Define our filter that we'll use to map our logs. 
-filter f_rails_apps { program("rails-***"); }; 
-filter f_passenger { facility(local7); };
-
-# BBG - Now use the above source and destination to route our
+# Now use the above source and destination to route our
 # log file to the appropriate place. 
-log { source(app_cluster); 
-    filter (f_rails_apps); 
-    destination(d_rails_apps); 
-    flags(final); };
+log {
+  source(app_cluster); 
+  filter (f_rails_apps); 
+  destination(d_rails_apps); 
+  flags(final);
+};
 
-log { source(app_cluster); 
-    filter (f_passenger); 
-    destination(d_passenger); 
-    flags(final); };
-
+log {
+  source(app_cluster); 
+  filter (f_passenger); 
+  destination(d_passenger); 
+  flags(final);
+};
