@@ -2,7 +2,7 @@
 # listen on an IP that then allows your application server
 # syslog-ng servers to talk to. 
 source app_cluster { 
-    udp( ip(<%= configuration[:syslog_ng][:log_server_ip] %>) port(<%= configuration[:syslog_ng][:log_server_port]%>)); 
+    udp(ip(<%= options[:log_server_ip] %>) port(<%= options[:log_server_port]%>));
 }; 
 
 # Define a destination.  Our filter will then map anything

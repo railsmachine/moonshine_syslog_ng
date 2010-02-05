@@ -21,9 +21,9 @@ options {
 #                 # etc
 #                }
 #             }
-#                                       
+#
 # Omitting :options will fallback to the Ubuntu defaults
-<% if configuration[:syslog_ng][:options].nil? || configuration[:syslog_ng][:options].empty? %>
+<% if options[:options].nil? || options[:options].empty? %>
 # Ubuntu default options.
         # disable the chained hostname format in logs
         # (default is enabled)
@@ -75,17 +75,17 @@ options {
         # (default is 2048)
         #log_msg_size(2048);
 
-	#Disable statistic log messages.
-	stats_freq(0);
+        #Disable statistic log messages.
+        stats_freq(0);
 
-	# Some program send log messages through a private implementation.
-	# and sometimes that implementation is bad. If this happen syslog-ng
-	# may recognise the program name as hostname. Whit this option
-	# we tell the syslog-ng that if a hostname match this regexp than that
-	# is not a real hostname.
-	bad_hostname("^gconfd$");
+        # Some program send log messages through a private implementation.
+        # and sometimes that implementation is bad. If this happen syslog-ng
+        # may recognise the program name as hostname. Whit this option
+        # we tell the syslog-ng that if a hostname match this regexp than that
+        # is not a real hostname.
+        bad_hostname("^gconfd$");
 <% else %>
-  <% configuration[:syslog_ng][:options].each do |key, value| %>
+  <% options[:options].each do |key, value| %>
         <%= key %>(<%= value %>);
   <% end %>
 <% end %>
@@ -379,4 +379,4 @@ log {
 ####
 # Extra configuration managed by moonshine
 
-<%= configuration[:syslog_ng][:extra] %>
+<%= options[:extra] %>

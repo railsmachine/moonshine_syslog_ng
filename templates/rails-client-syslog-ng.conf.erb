@@ -16,5 +16,5 @@ log {
 
 # You should set your IP address / port of the remote logging server. 
 destination log_server { 
-  udp("<%= configuration[:syslog_ng][:log_server_ip] %>" port(<%= configuration[:syslog_ng][:log_server_port]%>)); 
-}; 
+  udp(ip(<%= options[:log_server_ip] %>) port(<%= options[:log_server_port]%>));
+};
