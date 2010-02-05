@@ -227,6 +227,8 @@ log {
 log {
         source(s_all);
         filter(f_syslog);
+        filter(f_not_rails_apps);
+        filter(f_not_passenger);
         destination(df_syslog);
 };
 
@@ -270,6 +272,8 @@ log {
 log {
         source(s_all);
         filter(f_user);
+        filter(f_not_rails_apps);
+        filter(f_not_passenger);
         destination(df_user);
 };
 
@@ -335,6 +339,8 @@ log {
 log {
         source(s_all);
         filter(f_debug);
+        filter(f_not_rails_apps);
+        filter(f_not_passenger);
         destination(df_debug);
 };
 
