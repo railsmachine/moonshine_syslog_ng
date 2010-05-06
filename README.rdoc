@@ -17,9 +17,9 @@ In addition, there are recipes included to setup a centralized log server for yo
 
 This is the base syslog_ng recipe. It is responsible for installing the package, and setting it up with some reasonable configuration, and starting it as a service.  There are a few things you can configure here.
 
-First is <tt>:options</tt>. These are the <tt>options</tt> section of <tt>/etc/syslog-ng/syslog-ng.conf</tt>. If you don't specify anything, the Ubuntu defaults are used.
+First is <tt>:options</tt>. These are the options section of /etc/syslog-ng/syslog-ng.conf. If you don't specificy anything, the Ubuntu defaults are used.
 
-Second is <tt>:extra</tt>. This is an extra configuration to append to the end of <tt>/etc/syslog-ng/syslog-ng.conf</tt>.
+Second is <tt>:extra</tt>. This is an extra configuration to append to the end of /etc/syslog-ng/syslog-ng.conf.
 
 Example usage:
 
@@ -42,35 +42,33 @@ Example usage:
     :syslog_ng:
       :options:
         # note, it is important to quote on, off, yes, and no, as YAML will
-        # try to coerce those to booleans (true and false)
+	# try to coerce those to booleans (true and false)
         :chain_hostnames: 'off' 
-        :long_hostnames: 'on'
-        :use_fqdn: 'on'
-        :sync: 0
-        :stats: 43200
-        :log_msg_size: 1048576
+	:long_hostnames: 'on'
+	:use_fqdn: 'on'
+	:sync: 0
+	:stats: 43200
+	:log_msg_size: 1048576
     # With corresponding manifest:
     plugin :syslog_ng
     recipe :syslog_ng
-
-Note that the value of the <tt>:extra</tt> key is appended to the end of <tt>/etc/syslog-ng/syslog-ng.conf</tt>, not within syslog-ng's <tt>options</tt> block like the other configurable parameters shown.
 
 ==== syslog_ng_centralized_log_server
 
 This uses the underlying <tt>syslog_ng</tt> recipe to setup the host as a centralized log server ready to receive logs from hosts setup with <tt>syslog_ng_rails_client</tt>
 
-This will save rails logs to <tt>/var/log/rails/rails-application-environment.log</tt> and passenger logs to <tt>/var/log/rails/passenger.log</tt>.
+This will save rails logs to /var/log/rails/rails-application-environment.log and passenger logs to /var/log/rails/passenger.log.
 
-If you need log rotation, you can use <tt>logrotate</tt> to handle this for you.
+If you need log rotation, you can use logrotate to handle this for you.
 
 You need to provide additional configuration with the IP address of the log server and a port to listen on:
 
-    # moonshine.yml, note this isn't under the 'options' namespace
+    # moonshine.yml, note this isn't under the syslog_ng namespace
     :syslog_ng:
       :log_server_ip: 555.555.555.555
       :log_server_port: 515
 
-This sets some default <tt>options</tt> and applies this plugin's <tt>log-server-syslog-ng</tt> template as the value of <tt>:extra</tt>. If you need more customization, it probably would make sense to create a new template based on it with whatever options and extra configuration you need.
+This sets some <tt>:options</tt> and uses the <tt>:extra</tt>. If you need more customization, it probably would make sense to create a new recipe based on it with whatever options and extra configuration you need.
 
 ==== syslog_ng_rails_client
 
@@ -80,12 +78,12 @@ For this to catch Apache logging for the passenger vhost, the recipe must be dec
 
 You need to provide additional configuration with the IP address of the log server and a port to listen on:
 
-    # moonshine.yml, note this isn't under the 'options' namespace
+    # moonshine.yml, note this isn't under the syslog_ng namespace
     :syslog_ng:
       :log_server_ip: 555.555.555.555
       :log_server_port: 515
-
-This sets some default <tt>options</tt> and applies this plugin's <tt>rails-client-syslog-ng</tt> template as the value of <tt>:extra</tt>. If you need more customization, it probably would make sense to create a new template based on it with whatever options and extra configuration you need.
+      
+This sets some <tt>:options</tt> and uses the <tt>:extra</tt>. If you need more customization, it probably would make sense to create a new recipe based on it with whatever options and extra configuration you need.
 
 In addition to the updates to the manifest, you need to configure Rails to use the syslog instead of its own logger.
 

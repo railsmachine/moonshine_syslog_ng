@@ -9,7 +9,7 @@ module SyslogNg
   #
   #  plugin :syslog_ng
   #  recipe :syslog_ng
-  def syslog_ng(options={})
+  def syslog_ng
     package 'syslog-ng', :ensure => :installed
     service 'syslog-ng', :ensure => :running, :enable => true, :require => package('syslog-ng')
 
@@ -22,53 +22,51 @@ module SyslogNg
       :notify => service('syslog-ng')
   end
 
-  def syslog_ng_centralized_log_server(options={})
-    options = (configuration[:syslog_ng]||{}).deep_merge(options)
+  def syslog_ng_centralized_log_server
     extra_conf = template(File.join(File.dirname(__FILE__), '..', 'templates', 'log-server-syslog-ng.conf.erb'), binding)
-    options.deep_merge!({
-              :options => {
-                :chain_hostnames => 'off',
-                :sync => 0,
-                :dir_owner => 'root',
-                :dir_group => 'admin',
-                :stats => 43200,
-                :use_dns => 'yes',
-                :dns_cache => 'yes',
-                :dns_cache_size => 100,
-                :dns_cache_expire => 3600,
-                :dns_cache_expire_failed => 600,
-                :keep_hostname => 'yes',
-                :long_hostnames => 'on',
-                :use_fqdn => 'no',
-                :log_msg_size => 1048576,
-                :log_fifo_size => 1000
-              },
-              :extra => extra_conf
-            })
-    syslog_ng(options)
+    configure :syslog_ng => {
+                              :options => {
+                                :chain_hostnames => 'off',
+                                :sync => 0,
+                                :dir_owner => 'root',
+                                :dir_group => 'admin',
+                                :stats => 43200,
+                                :use_dns => 'yes',
+                                :dns_cache => 'yes',
+                                :dns_cache_size => 100,
+                                :dns_cache_expire => 3600,
+                                :dns_cache_expire_failed => 600,
+                                :keep_hostname => 'yes',
+                                :long_hostnames => 'on',
+                                :use_fqdn => 'no',
+                                :log_msg_size => 1048576,
+                                :log_fifo_size => 1000
+                              },
+                              :extra => extra_conf
+                            }
+    syslog_ng
   end
 
-  def syslog_ng_rails_client(options={})
-    options = (configuration[:syslog_ng]||{}).deep_merge(options)
+  def syslog_ng_rails_client
     extra_conf = template(File.join(File.dirname(__FILE__), '..', 'templates', 'rails-client-syslog-ng.conf.erb'), binding)
 
-    options.deep_merge!({
-              :options => {
-                :chain_hostnames => 'off',
-                :long_hostnames => 'on',
-                :use_fqdn => 'on',
-                :sync => 0,
-                :stats => 43200,
-                :log_msg_size => 1048576
-              },
-              :extra => extra_conf
-            })
+    configure :syslog_ng => {
+                :options => {
+                  :chain_hostnames => 'off',
+                  :long_hostnames => 'on',
+                  :use_fqdn => 'on',
+                  :sync => 0,
+                  :stats => 43200,
+                  :log_msg_size => 1048576
+                },
+                :extra => extra_conf
+              }
     vhost_extra = configuration[:passenger][:vhost_extra] || ""
     configure :passenger => {
       :vhost_extra => vhost_extra + %Q{\n  CustomLog \"| logger -p local7.info -t passenger\" vhost_combined}
     }
 
-    syslog_ng(options)
+    syslog_ng
   end
 
 end
