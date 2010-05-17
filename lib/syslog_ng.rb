@@ -45,6 +45,10 @@ module SyslogNg
                               :extra => extra_conf
                             }
     syslog_ng
+
+    logrotate_options = configuration[:syslog_ng][:log_server_rotate_options] || 
+    logrotate_options ||= %w(daily missingok compress sharedscripts create ) << "create #{configuration[:user]} #{configuration[:group] || configuration[:user]} 440"
+    logrotate '/var/log/rails/*/*.log', :options => logrotate_options
   end
 
   def syslog_ng_rails_client
