@@ -8,7 +8,7 @@ source app_cluster {
 # Define a destination.  Our filter will then map anything
 # from our above source to this destination. 
 destination d_rails_apps { 
-  file( "/var/log/rails/$HOST/$PROGRAM.log" 
+  file( "/var/log/rails<%= "/$HOST" if configuration[:syslog_ng][:host_in_file_path] %>/$PROGRAM.log" 
         owner("<%= configuration[:user] %>") 
         group("<%= configuration[:group] || configuration[:user] %>") 
         perm(0660) 
@@ -17,7 +17,7 @@ destination d_rails_apps {
 }; 
 
 destination d_passenger { 
-  file( "/var/log/rails/$HOST/passenger.log" 
+  file( "/var/log/rails<%= "/$HOST" if configuration[:syslog_ng][:host_in_file_path %>/passenger.log" 
         owner("<%= configuration[:user] %>") 
         group("<%= configuration[:group] || configuration[:user] %>") 
         perm(0660) 
