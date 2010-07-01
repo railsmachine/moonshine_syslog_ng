@@ -17,7 +17,7 @@ destination d_rails_apps {
 }; 
 
 destination d_passenger { 
-  file( "/var/log/rails<%= "/$HOST" if configuration[:syslog_ng][:host_in_file_path %>/passenger.log" 
+  file( "/var/log/rails<%= "/$HOST" if configuration[:syslog_ng][:host_in_file_path] %>/passenger.log"
         owner("<%= configuration[:user] %>") 
         group("<%= configuration[:group] || configuration[:user] %>") 
         perm(0660) 
