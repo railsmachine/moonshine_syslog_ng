@@ -41,8 +41,7 @@ Example usage:
     # Or using moonshine.yml:
     :syslog_ng:
       :options:
-        # note, it is important to quote on, off, yes, and no, as YAML will
-	# try to coerce those to booleans (true and false)
+        # note, it is important to quote on, off, yes, and no, as YAML will try to coerce those to booleans (true and false)
         :chain_hostnames: 'off' 
 	:long_hostnames: 'on'
 	:use_fqdn: 'on'
