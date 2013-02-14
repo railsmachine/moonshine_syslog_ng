@@ -23,7 +23,7 @@ options {
 #             }
 #                                       
 # Omitting :options will fallback to the Ubuntu defaults
-<% if configuration[:syslog_ng][:options].nil? || configuration[:syslog_ng][:options].empty? %>
+<% if configuration[:syslog_ng].blank? || configuration[:syslog_ng][:options].blank? %>
 # Ubuntu default options.
         # disable the chained hostname format in logs
         # (default is enabled)
@@ -379,4 +379,4 @@ log {
 ####
 # Extra configuration managed by moonshine
 
-<%= configuration[:syslog_ng][:extra] %>
+<%= configuration[:syslog_ng][:extra] if configuration[:syslog_ng].present? %>
