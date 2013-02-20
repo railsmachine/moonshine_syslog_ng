@@ -86,10 +86,13 @@ This sets some <tt>:options</tt> and uses the <tt>:extra</tt>. If you need more 
 
 In addition to the updates to the manifest, you need to configure Rails to use the syslog instead of its own logger.
 
-    # config/environment.rb
+    # Gemfile if using Rails 3+ or Rails 2.3 with bundler
+    gem 'SyslogLogger', :require => false
+
+    # config/environment.rb if using Rails 2.3
     config.gem 'SyslogLogger', :lib => false
 
     # config/environments/production.rb
-    require 'syslog_logger' 
+    require 'syslog/logger' 
     # having the name start with rails- is required for the centralized logging to work
-    config.logger = SyslogLogger.new('rails-myapp-production')
+    config.logger = Syslog::Logger.new("rails-production")
