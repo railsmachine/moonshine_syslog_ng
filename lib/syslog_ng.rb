@@ -13,6 +13,15 @@ module SyslogNg
     package 'syslog-ng', :ensure => :installed
     service 'syslog-ng', :ensure => :running, :enable => true, :require => package('syslog-ng')
 
+    # make sure extra app logs are there, so file sources not existing doesn't freak out syslog-ng
+    (configuration[:syslog_ng][:extra_app_logs] || []).each do |path|
+      file path,
+        :ensure => :present,
+        :owner => configuration[:user],
+        :group => configuration[:group] || configuration[:user],
+        :before => service('syslog-ng')
+    end
+
     file '/etc/syslog-ng/syslog-ng.conf', 
       :content => template(File.join(File.dirname(__FILE__), '..', 'templates', 'syslog-ng.conf.erb'), binding),
       :mode => '644',
@@ -47,16 +56,17 @@ module SyslogNg
     logrotate_options = configuration[:syslog_ng][:log_server_rotate_options] || 
     logrotate_options ||= %w(daily missingok compress sharedscripts create ) << "create #{configuration[:user]} #{configuration[:group] || configuration[:user]} 440"
     if configuration[:syslog_ng][:host_in_file_path]
-      logrotate '/var/log/rails/*/*.log', :options => logrotate_options
+      logrotate '/var/log/centralized/*/*.log', :options => logrotate_options
     else
-      logrotate '/var/log/rails/*.log', :options => logrotate_options
+      logrotate '/var/log/centralized/*.log', :options => logrotate_options
     end
   end
 
   def syslog_ng_rails_client
     raise "Missing configuration[:syslog_ng][:log_server_ip]" unless configuration[:syslog_ng] && configuration[:syslog_ng][:log_server_ip]
     
-    extra_conf = template(File.join(File.dirname(__FILE__), '..', 'templates', 'rails-client-syslog-ng.conf.erb'), binding)
+    extra_conf = configuration[:syslog_ng][:extra] || ""
+    client_extra_conf = template(File.join(File.dirname(__FILE__), '..', 'templates', 'rails-client-syslog-ng.conf.erb'), binding)
 
     configure :syslog_ng => {
                 :options => {
@@ -67,7 +77,7 @@ module SyslogNg
                   :stats => 43200,
                   :log_msg_size => 1048576
                 },
-                :extra => extra_conf
+                :extra => "#{extra_conf}\n#{client_extra_conf}"
               }
     vhost_extra = configuration[:passenger][:vhost_extra] || ""
     configure :passenger => {

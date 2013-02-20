@@ -104,6 +104,12 @@ source s_all {
         unix-stream("/dev/log");
         # messages from the kernel
         file("/proc/kmsg" log_prefix("kernel: "));
+        
+        # custom source files from configuration[:syslog_ng][:source_files]
+<% (configuration[:syslog_ng][:extra_app_logs] || {}).each do |path| %>
+<% program = (path.match(/\/([^\/]*)\.log$/) || path.match(/\/([^\/]*)$/))[1] %>
+        file("<%= path %>" log_prefix("<%= program %>: ") follow_freq(1));
+<% end %>
         # use the following line if you want to receive remote UDP logging messages
         # (this is equivalent to the "-r" syslogd flag)
         # udp();
@@ -207,7 +213,23 @@ filter f_rails_apps { program("rails-***"); };
 filter f_not_rails_apps { not program("rails-***"); }; 
 filter f_passenger { facility(local7); };
 filter f_not_passenger { not facility(local7); };
+filter f_bluepill { facility(local6); };
+filter f_not_bluepill { not facility(local6); };
 
+<% (configuration[:syslog_ng][:extra_app_logs] || {}).each do |path| %>
+<% program = (path.match(/\/([^\/]*)\.log$/) || path.match(/\/([^\/]*)$/))[1] %>
+filter f_<%= program %> { program("<%= program %>"); };
+filter f_not_<%= program %> { not program("<%= program %>"); };
+<% end %>
+
+filter f_not_app_log {
+  not program("rails-***") and not facility(local7) and not facility(local6)
+<% (configuration[:syslog_ng][:extra_app_logs] || {}).each do |path| %>
+<% program = (path.match(/\/([^\/]*)\.log$/) || path.match(/\/([^\/]*)$/))[1] %>
+  and not not program("<%= program %>")
+<% end %>
+ ; 
+};
 
 ######
 # logs
@@ -227,8 +249,7 @@ log {
 log {
         source(s_all);
         filter(f_syslog);
-        filter(f_not_rails_apps);
-        filter(f_not_passenger);
+        filter(f_not_app_log);
         destination(df_syslog);
 };
 
@@ -272,8 +293,7 @@ log {
 log {
         source(s_all);
         filter(f_user);
-        filter(f_not_rails_apps);
-        filter(f_not_passenger);
+        filter(f_not_app_log);
         destination(df_user);
 };
 
@@ -339,8 +359,7 @@ log {
 log {
         source(s_all);
         filter(f_debug);
-        filter(f_not_rails_apps);
-        filter(f_not_passenger);
+        filter(f_not_app_log);
         destination(df_debug);
 };
 
@@ -352,8 +371,7 @@ log {
 log {
         source(s_all);
         filter(f_messages);
-        filter(f_not_rails_apps);
-        filter(f_not_passenger);
+        filter(f_not_app_log);
         destination(df_messages);
 };
 
