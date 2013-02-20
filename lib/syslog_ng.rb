@@ -21,7 +21,6 @@ module SyslogNg
   end
 
   def syslog_ng_centralized_log_server
-    extra_conf = template(File.join(File.dirname(__FILE__), '..', 'templates', 'log-server-syslog-ng.conf.erb'), binding)
     configure :syslog_ng => {
                               :options => {
                                 :chain_hostnames => 'off',
@@ -40,8 +39,9 @@ module SyslogNg
                                 :log_msg_size => 1048576,
                                 :log_fifo_size => 1000
                               },
-                              :extra => extra_conf
                             }
+    extra_conf = template(File.join(File.dirname(__FILE__), '..', 'templates', 'log-server-syslog-ng.conf.erb'), binding)
+    configure :syslog_ng => {:extra => extra_conf}
     syslog_ng
 
     logrotate_options = configuration[:syslog_ng][:log_server_rotate_options] || 
@@ -54,6 +54,8 @@ module SyslogNg
   end
 
   def syslog_ng_rails_client
+    raise "Missing configuration[:syslog_ng][:log_server_ip]" unless configuration[:syslog_ng] && configuration[:syslog_ng][:log_server_ip]
+    
     extra_conf = template(File.join(File.dirname(__FILE__), '..', 'templates', 'rails-client-syslog-ng.conf.erb'), binding)
 
     configure :syslog_ng => {

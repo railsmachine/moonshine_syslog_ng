@@ -1,14 +1,14 @@
 # Define a source for log files.  This causes syslog-ng to
 # listen on an IP that then allows your application server
 # syslog-ng servers to talk to. 
-source app_cluster { 
-    <%= configuration[:syslog_ng][:log_server_protocol] || "udp" %>( ip(<%= configuration[:syslog_ng][:log_server_ip] %>) port(<%= configuration[:syslog_ng][:log_server_port]%>) max-connections(<%= configuration[:syslog_ng][:log_server_max_connections] || 50 %>)); 
+source s_net { 
+    <%= configuration[:syslog_ng][:log_server_protocol] || "udp" %>( ip(<%= configuration[:syslog_ng][:log_server_ip] || '127.0.0.1' %>) port(<%= configuration[:syslog_ng][:log_server_port] || '514' %>)); 
 }; 
 
 # Define a destination.  Our filter will then map anything
 # from our above source to this destination. 
-destination d_rails_apps { 
-  file( "/var/log/rails<%= "/$HOST" if configuration[:syslog_ng][:host_in_file_path] %>/$PROGRAM.log" 
+destination d_centralized_rails_apps { 
+  file( "/var/log/centralized<%= "/$HOST" if configuration[:syslog_ng][:host_in_file_path] %>/$PROGRAM.log" 
         owner("<%= configuration[:user] %>") 
         group("<%= configuration[:group] || configuration[:user] %>") 
         perm(0660) 
@@ -16,27 +16,195 @@ destination d_rails_apps {
         create_dirs(yes)); 
 }; 
 
-destination d_passenger { 
-  file( "/var/log/rails<%= "/$HOST" if configuration[:syslog_ng][:host_in_file_path] %>/passenger.log"
+destination d_centralized_passenger { 
+  file( "/var/log/centralized<%= "/$HOST" if configuration[:syslog_ng][:host_in_file_path] %>/passenger.log"
         owner("<%= configuration[:user] %>") 
         group("<%= configuration[:group] || configuration[:user] %>") 
         perm(0660) 
         dir_perm(0770) 
         create_dirs(yes)); 
 }; 
+
+# Duplicate default destinations from base configuration, except in a centralized directory
+destination df_centralized_auth { file("/var/log/centralized/auth.log"); };
+destination df_centralized_syslog { file("/var/log/centralized/syslog"); };
+destination df_centralized_cron { file("/var/log/centralized/cron.log"); };
+destination df_centralized_daemon { file("/var/log/centralized/daemon.log"); };
+destination df_centralized_kern { file("/var/log/centralized/kern.log"); };
+destination df_centralized_lpr { file("/var/log/centralized/lpr.log"); };
+destination df_centralized_mail { file("/var/log/centralized/mail.log"); };
+destination df_centralized_user { file("/var/log/centralized/user.log"); };
+destination df_centralized_uucp { file("/var/log/centralized/uucp.log"); };
+
+destination df_centralized_facility_dot_info { file("/var/log/centralized/$FACILITY.info"); };
+destination df_centralized_facility_dot_notice { file("/var/log/centralized/$FACILITY.notice"); };
+destination df_centralized_facility_dot_warn { file("/var/log/centralized/$FACILITY.warn"); };
+destination df_centralized_facility_dot_err { file("/var/log/centralized/$FACILITY.err"); };
+destination df_centralized_facility_dot_crit { file("/var/log/centralized/$FACILITY.crit"); };
+
+destination df_centralized_news_dot_notice { file("/var/log/centralized/news/news.notice" owner("news")); };
+destination df_centralized_news_dot_err { file("/var/log/centralized/news/news.err" owner("news")); };
+destination df_centralized_news_dot_crit { file("/var/log/centralized/news/news.crit" owner("news")); };
+
+destination df_centralized_debug { file("/var/log/centralized/debug"); };
+destination df_centralized_messages { file("/var/log/centralized/messages"); };
+
 
 # Now use the above source and destination to route our
 # log file to the appropriate place. 
 log {
-  source(app_cluster); 
+  source(s_net); 
   filter (f_rails_apps); 
-  destination(d_rails_apps); 
+  destination(d_centralized_rails_apps); 
   flags(final);
 };
 
 log {
-  source(app_cluster); 
+  source(s_net); 
   filter (f_passenger); 
-  destination(d_passenger); 
+  destination(d_centralized_passenger); 
   flags(final);
+};
+
+# And duplicate all the default log rules for files (not pipes like dp_xconsole)
+
+# auth,authpriv.*                 /var/log/auth.log
+log {
+        source(s_net);
+        filter(f_auth);
+        destination(df_centralized_auth);
+};
+
+# *.*;auth,authpriv.none          -/var/log/syslog
+log {
+        source(s_net);
+        filter(f_syslog);
+        filter(f_not_rails_apps);
+        filter(f_not_passenger);
+        destination(df_centralized_syslog);
+};
+
+# this is commented out in the default syslog.conf
+# cron.*                         /var/log/cron.log
+#log {
+#        source(s_net);
+#        filter(f_cron);
+#        destination(df_centralized_cron);
+#};
+
+# daemon.*                        -/var/log/daemon.log
+log {
+        source(s_net);
+        filter(f_daemon);
+        destination(df_centralized_daemon);
+};
+
+# kern.*                          -/var/log/kern.log
+log {
+        source(s_net);
+        filter(f_kern);
+        destination(df_centralized_kern);
+};
+
+# lpr.*                           -/var/log/lpr.log
+log {
+        source(s_net);
+        filter(f_lpr);
+        destination(df_centralized_lpr);
+};
+
+# mail.*                          -/var/log/mail.log
+log {
+        source(s_net);
+        filter(f_mail);
+        destination(df_centralized_mail);
+};
+
+# user.*                          -/var/log/user.log
+log {
+        source(s_net);
+        filter(f_user);
+        filter(f_not_rails_apps);
+        filter(f_not_passenger);
+        destination(df_centralized_user);
+};
+
+# uucp.*                          /var/log/uucp.log
+log {
+        source(s_net);
+        filter(f_uucp);
+        destination(df_centralized_uucp);
+};
+
+# mail.info                       -/var/log/mail.info
+log {
+        source(s_net);
+        filter(f_mail);
+        filter(f_at_least_info);
+        destination(df_centralized_facility_dot_info);
+};
+
+# mail.warn                       -/var/log/mail.warn
+log {
+        source(s_net);
+        filter(f_mail);
+        filter(f_at_least_warn);
+        destination(df_centralized_facility_dot_warn);
+};
+
+# mail.err                        /var/log/mail.err
+log {
+        source(s_net);
+        filter(f_mail);
+        filter(f_at_least_err);
+        destination(df_centralized_facility_dot_err);
+};
+
+# news.crit                       /var/log/news/news.crit
+log {
+        source(s_net);
+        filter(f_news);
+        filter(f_at_least_crit);
+        destination(df_centralized_news_dot_crit);
+};
+
+# news.err                        /var/log/news/news.err
+log {
+        source(s_net);
+        filter(f_news);
+        filter(f_at_least_err);
+        destination(df_centralized_news_dot_err);
+};
+
+# news.notice                     /var/log/news/news.notice
+log {
+        source(s_net);
+        filter(f_news);
+        filter(f_at_least_notice);
+        destination(df_centralized_news_dot_notice);
+};
+
+
+# *.=debug;\
+#         auth,authpriv.none;\
+#         news.none;mail.none     -/var/log/debug
+log {
+        source(s_net);
+        filter(f_debug);
+        filter(f_not_rails_apps);
+        filter(f_not_passenger);
+        destination(df_centralized_debug);
+};
+
+
+# *.=info;*.=notice;*.=warn;\
+#         auth,authpriv.none;\
+#         cron,daemon.none;\
+#         mail,news.none          -/var/log/messages
+log {
+        source(s_net);
+        filter(f_messages);
+        filter(f_not_rails_apps);
+        filter(f_not_passenger);
+        destination(df_centralized_messages);
 };

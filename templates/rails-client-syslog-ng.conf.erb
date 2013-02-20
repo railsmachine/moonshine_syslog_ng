@@ -1,20 +1,11 @@
-# Configure the rails portion of our syslog-ng setup! 
-# This section can be left as is. 
-log {
-  source(s_all); 
-  filter(f_rails_apps); 
-  destination(log_server); 
-  flags(final);
-}; 
-
-log {
-  source(s_all);
-  filter(f_passenger);
-  destination(log_server);
-  flags(final);
-};
 
 # You should set your IP address / port of the remote logging server. 
 destination log_server { 
-  <%= configuration[:syslog_ng][:log_server_protocol] || "udp" %>("<%= configuration[:syslog_ng][:log_server_ip] %>" port(<%= configuration[:syslog_ng][:log_server_port]%>)); 
+  <%= configuration[:syslog_ng][:log_server_protocol] || "udp" %>("<%= configuration[:syslog_ng][:log_server_ip] || raise('missing log_server_ip') %>" port(<%= configuration[:syslog_ng][:log_server_port] || 514 %>)); 
 }; 
+
+# send just about everything to the log server
+log {
+  source(s_all);
+  destination(log_server);
+};
