@@ -13,8 +13,6 @@ module SyslogNg
     package 'syslog-ng', :ensure => :installed
     service 'syslog-ng', :ensure => :running, :enable => true, :require => package('syslog-ng')
 
-    service 'sysklogd', :ensure => false, :enable => false
-
     file '/etc/syslog-ng/syslog-ng.conf', 
       :content => template(File.join(File.dirname(__FILE__), '..', 'templates', 'syslog-ng.conf.erb'), binding),
       :mode => '644',
