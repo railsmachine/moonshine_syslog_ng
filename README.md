@@ -1,19 +1,19 @@
-= Moonshine syslog-ng
+# Moonshine syslog-ng
 
-=== A plugin for Moonshine[http://github.com/railsmachine/moonshine]
+### A plugin for [Moonshine](http://github.com/railsmachine/moonshine)
 
-A plugin and recipe for installing and managing syslog_ng[http://www.balabit.com/network-security/syslog-ng/].
+A plugin and recipe for installing and managing [syslog_ng](http://www.balabit.com/network-security/syslog-ng/).
 
 In addition, there are recipes included to setup a centralized log server for your application servers, and a recipe to setup application servers to log to the centralized log server.
 
-=== Instructions
+### Instructions
 
 * <tt>script/plugin install git://github.com/railsmachine/moonshine_syslog_ng.git</tt>
 * Include the plugin in your Moonshine manifest
-    plugin :syslog_ng
+    <tt>plugin :syslog_ng</tt>
 * Choose one of the following syslog_ng recipes, explained below
 
-==== syslog_ng
+#### syslog_ng
 
 This is the base syslog_ng recipe. It is responsible for installing the package, and setting it up with some reasonable configuration, and starting it as a service.  There are a few things you can configure here.
 
@@ -52,7 +52,7 @@ Example usage:
     plugin :syslog_ng
     recipe :syslog_ng
 
-==== syslog_ng_centralized_log_server
+#### syslog_ng_centralized_log_server
 
 This uses the underlying <tt>syslog_ng</tt> recipe to setup the host as a centralized log server ready to receive logs from hosts setup with <tt>syslog_ng_rails_client</tt>
 
@@ -69,7 +69,7 @@ You need to provide additional configuration with the IP address of the log serv
 
 This sets some <tt>:options</tt> and uses the <tt>:extra</tt>. If you need more customization, it probably would make sense to create a new recipe based on it with whatever options and extra configuration you need.
 
-==== syslog_ng_rails_client
+#### syslog_ng_rails_client
 
 This uses the underlying <tt>syslog_ng</tt> recipe to setup the host to send rails logs to a host setup with <tt>syslog_ng_centralized_log_server</tt>.
 
@@ -96,3 +96,6 @@ In addition to the updates to the manifest, you need to configure Rails to use t
     require 'syslog/logger' 
     # having the name start with rails- is required for the centralized logging to work
     config.logger = Syslog::Logger.new("rails-production")
+
+***
+Unless otherwise specified, all content copyright &copy; 2014, [Rails Machine, LLC](http://railsmachine.com)
